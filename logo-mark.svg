@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-labelledby="t">
+  <title id="t">Cabinwright</title>
+  <!-- A cabin whose roof is a carpenter's square (the "wright"), over a screen. -->
+  <style>
+    .a { stop-color: #0B8F86 } .b { stop-color: #5A54C4 }
+    @media (prefers-color-scheme: dark) { .a { stop-color: #34E0D5 } .b { stop-color: #847FDC } }
+  </style>
+  <defs>
+    <linearGradient id="g" x1="0" y1="10" x2="0" y2="55" gradientUnits="userSpaceOnUse">
+      <stop offset="0" class="a"/><stop offset="1" class="b"/>
+    </linearGradient>
+  </defs>
+  <g fill="url(#g)">
+    <path d="M32 10L50.38 28.38L46.85 31.92L44.23 29.3L45.79 27.75L44.66 26.62L43.1 28.17L41.05 26.12L42.61 24.57L41.48 23.44L39.92 24.99L37.87 22.94L39.42 21.38L38.29 20.25L36.74 21.81L34.83 19.9L19.98 34.75L13.62 28.38Z"/>
+    <rect x="18" y="37" width="28" height="18" rx="4.5"/>
+  </g>
+</svg>
