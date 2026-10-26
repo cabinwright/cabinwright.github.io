@@ -11,7 +11,9 @@ Not affiliated with Kia, Hyundai or Mobis.
 
 | File | What |
 |---|---|
-| `index.html` | The whole site: one static page, inline CSS and JS, no build step, no trackers, no web fonts. It lists the store's apps from [`apps/index.json`](https://cabinwright.github.io/apps/index.json) when it can, and shows a built-in list when it can't. |
+| `index.html` | The landing page: what Cabinwright is, the store's apps (from [`apps/index.json`](https://cabinwright.github.io/apps/index.json) when it can, a built-in list when it can't), and three steps to start. |
+| `docs/` | The docs: install, safety and undo, developers, roadmap. Plain HTML pages that share the site's nav. Detail goes here, not on the landing page. |
+| `style.css` | Shared by every page. Static, no build step, no trackers, no web fonts. |
 | `logo.svg` | Mark and wordmark; follows the viewer's light or dark scheme. |
 | `assets/logo-on-dark.svg`, `assets/logo-on-light.svg` | The same, fixed for one background. |
 | `logo-mark.svg` | The mark alone, transparent; follows light or dark. |

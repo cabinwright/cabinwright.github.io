@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>For developers · Cabinwright docs</title>
+<meta name="description" content="Cabinwright repos, the signed app index, tweak packs and the app API.">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#121214" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F0F0F0" media="(prefers-color-scheme: light)">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="top">
+  <div class="wrap">
+    <a href="../" aria-label="Cabinwright home"><img src="../logo.svg" alt="Cabinwright" width="175" height="36"></a>
+    <nav aria-label="Site">
+      <ul>
+        <li><a href="../">Home</a></li>
+        <li><a href="./">Docs</a></li>
+        <li><a href="https://github.com/cabinwright">GitHub</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap docs">
+  <nav class="side" aria-label="Docs">
+    <p class="group">Docs</p>
+    <ul><li><a href="index.html">Overview</a></li><li><a href="install.html">Install</a></li><li><a href="safety.html">Safety and undo</a></li><li><a href="developers.html" aria-current="page">For developers</a></li><li><a href="roadmap.html">Roadmap</a></li></ul>
+  </nav>
+  <main id="main" class="prose">
+<h1>For developers</h1>
+<p>Everything is on GitHub under <a href="https://github.com/cabinwright">cabinwright</a>. Apps are Kotlin or Java compiled
+  against Android 4.4 (API 19), built without Gradle and shrunk with R8. On-car scripts are shell for
+  the head unit's mksh and toolbox.</p>
+
+<h2>Repos</h2>
+<div class="table">
+<table>
+  <thead><tr><th scope="col">Repo</th><th scope="col">What's in it</th><th scope="col">License</th></tr></thead>
+  <tbody>
+    <tr><td><a href="https://github.com/cabinwright/store">store</a></td><td>The Cabinwright store app (<code>cabinwright.store</code>), its root helper, and the move from kia.store.</td><td>MIT</td></tr>
+    <tr><td><a href="https://github.com/cabinwright/menu">menu</a></td><td>Edit Menu (<code>cabinwright.menu</code>), the launcher hook, and the Cabinwright API and build tools.</td><td>MIT</td></tr>
+    <tr><td><a href="https://github.com/cabinwright/tweaks">tweaks</a></td><td>The Tweaks app (<code>cabinwright.tweaks</code>) and the tweak runner, <code>tweaksd</code>.</td><td>MIT</td></tr>
+    <tr><td><a href="https://github.com/cabinwright/tweaks-projection">tweaks-projection</a></td><td>Wireless Android Auto and CarPlay, cluster directions, reconnect (<code>tweaks.projection</code>). A port of HMG Leafia Plus's package.</td><td>AGPL-3.0</td></tr>
+    <tr><td><a href="https://github.com/cabinwright/tweaks-adb">tweaks-adb</a></td><td>ADB over Wi-Fi (<code>tweaks.adb</code>), kept in step with Engineering Mode.</td><td>MIT</td></tr>
+    <tr><td><a href="https://github.com/cabinwright/apps">apps</a></td><td>The signed app index: one <code>apps/&lt;id&gt;.json</code> per app, checked on every pull request.</td><td>MIT</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>The index</h2>
+<p>The store reads <a href="https://cabinwright.github.io/apps/index.json"><code>apps/index.json</code></a>
+  and <code>index.json.sig</code>, an RSA-3072 SHA256withRSA signature over its exact bytes, checked
+  against pinned keys. A <code>sequence</code> that never goes down and an <code>expires</code> 90
+  days out stop old copies being replayed. Each version pins its package's size and SHA-256, and
+  carries a review of what it installs.</p>
+
+<h3>Adding an app</h3>
+<p>Release a NEMESIS zip on GitHub and open a pull request with <code>apps/&lt;id&gt;.json</code>.
+  The check posts a review of what the package installs and runs. See
+  <a href="https://github.com/cabinwright/apps/blob/main/CONTRIBUTING.md">CONTRIBUTING</a>.</p>
+
+<h2>Tweak packs</h2>
+<p>A tweak pack is any NEMESIS package with a <code>tweaks/&lt;id&gt;/</code> folder: a
+  <code>tweak.conf</code> plus shell scripts (<code>run.sh</code>, or <code>enable.sh</code>,
+  <code>disable.sh</code> and <code>status.sh</code>). Its switches appear in the Tweaks app, and
+  <code>tweaksd</code> runs them. Packs need no install hooks. The format and lifecycle are in the
+  tweaks repo's <a href="https://github.com/cabinwright/tweaks/blob/main/DESIGN.md">DESIGN.md</a>.</p>
+
+<h2>The app API</h2>
+<p>Add one intent filter and your app appears in All Menus:</p>
+<pre><code>&lt;category android:name="dev.cabinwright.category.ALL_MENUS" /&gt;</code></pre>
+<p>The optional UI library gives you <code>CarPage</code> (the head unit's look, day and night),
+  <code>SplitScreen</code> and <code>CarAudio</code> (play through the car's speakers).
+  <code>api/tools/build-app.sh</code> builds an app; <code>lint.sh</code> checks it. See the
+  <a href="https://github.com/cabinwright/menu">menu repo</a>.</p>
+
+<h3>Launching from NEMESIS</h3>
+<p>NEMESIS Manager's Launch button starts the activity in each <code>[app.N]</code> section's
+  <code>component=</code> (or the package's launcher activity if only <code>package=</code> is set).
+  Keep it pointing at a real exported activity: it is how people open an app before Edit Menu's
+  launcher change is set up.</p>
+  </main>
+</div>
+
+<footer>
+  <div class="wrap">
+    <p class="affil">Not affiliated with Kia, Hyundai or Mobis.</p>
+    <p>Kia and Hyundai are trademarks of their owners, used here only to say which head units
+      this works with. NEMESIS is a separate community project. Modifying your head unit is at your own risk.</p>
+    <p>Cabinwright by hazptr. <a href="https://github.com/cabinwright/cabinwright.github.io">Source for this page</a>, MIT licensed.</p>
+  </div>
+</footer>
+</body>
+</html>
