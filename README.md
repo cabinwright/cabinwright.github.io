@@ -26,11 +26,11 @@ Not affiliated with Kia, Hyundai or Mobis.
 The colours are the head unit's own, as the Cabinwright API's `CarPage` uses them
 ([menu](https://github.com/cabinwright/menu), `api/ui`): night background `#121214`, cards
 `#161618` with a `#313136` edge, icon tiles `#1F1F24` / `#3D3D44`, text `#B6C1C8`, muted
-`#79838A`, and the highlight teal `#17BEB0`. The mark uses the stock icons' gradient,
-`#34E0D5` to `#847FDC`. The light scheme uses the day colours (`#F0F0F0`, edge `#CBCBCB`) with
+`#79838A`, and the highlight teal `#17BEB0`. The mark is solid teal (`#0A6F68` on
+light backgrounds). The light scheme uses the day colours (`#F0F0F0`, edge `#CBCBCB`) with
 text and teal darkened to pass WCAG AA.
 
-The mark is a cabin whose roof is a carpenter's square (the "wright"), over a screen. Only the
+The mark is a log cabin: three logs with round ends, a gable roof, a chimney and a door. Only the
 colours come from the head unit; no manufacturer logo, font or artwork is used.
 
 ## Editing
