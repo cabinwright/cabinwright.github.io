@@ -2,8 +2,8 @@
   <title id="t">Cabinwright</title>
   <!-- A log cabin: three logs with round ends, a gable roof, a chimney and a door. -->
   <style>
-    .a { stop-color: #0A6F68 } .b { stop-color: #0A6F68 }
-    @media (prefers-color-scheme: dark) { .a { stop-color: #17BEB0 } .b { stop-color: #17BEB0 } }
+    .a { stop-color: #0B8F86 } .b { stop-color: #5A54C4 }
+    @media (prefers-color-scheme: dark) { .a { stop-color: #34E0D5 } .b { stop-color: #847FDC } }
   </style>
   <defs>
     <linearGradient id="g" x1="0" y1="10" x2="0" y2="55" gradientUnits="userSpaceOnUse">

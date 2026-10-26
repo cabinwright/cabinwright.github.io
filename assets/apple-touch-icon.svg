@@ -2,7 +2,7 @@
   <!-- Square and opaque: iOS rounds the corners itself. -->
   <defs>
     <linearGradient id="g" x1="0" y1="10" x2="0" y2="55" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#17BEB0"/><stop offset="1" stop-color="#17BEB0"/>
+      <stop offset="0" stop-color="#34E0D5"/><stop offset="1" stop-color="#847FDC"/>
     </linearGradient>
   </defs>
   <rect width="64" height="64" fill="#1F1F24"/>

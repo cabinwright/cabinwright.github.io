@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 312 64" width="312" height="64" role="img" aria-labelledby="t">
   <title id="t">Cabinwright</title>
   <style>
-    .a { stop-color: #0A6F68 } .b { stop-color: #0A6F68 } .w { stroke: #1E2A30 } .d { fill: #1E2A30 }
+    .a { stop-color: #0B8F86 } .b { stop-color: #5A54C4 } .w { stroke: #1E2A30 } .d { fill: #1E2A30 }
   </style>
   <defs>
     <linearGradient id="g" x1="0" y1="10" x2="0" y2="55" gradientUnits="userSpaceOnUse">

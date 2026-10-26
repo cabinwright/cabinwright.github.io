@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 312 64" width="312" height="64" role="img" aria-labelledby="t">
   <title id="t">Cabinwright</title>
   <style>
-    .a { stop-color: #0A6F68 } .b { stop-color: #0A6F68 } .w { stroke: #1E2A30 } .d { fill: #1E2A30 }
+    .a { stop-color: #0B8F86 } .b { stop-color: #5A54C4 } .w { stroke: #1E2A30 } .d { fill: #1E2A30 }
     @media (prefers-color-scheme: dark) {
-      .a { stop-color: #17BEB0 } .b { stop-color: #17BEB0 } .w { stroke: #E8EDF0 } .d { fill: #E8EDF0 }
+      .a { stop-color: #34E0D5 } .b { stop-color: #847FDC } .w { stroke: #E8EDF0 } .d { fill: #E8EDF0 }
     }
   </style>
   <defs>
