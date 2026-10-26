@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cabinwright: apps and tweaks for your car's head unit</title>
+<meta name="description" content="Cabinwright is a free, open-source app store and tweak platform for Kia and Hyundai head units running NEMESIS. Not affiliated with Kia, Hyundai or Mobis.">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#121214" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F0F0F0" media="(prefers-color-scheme: light)">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+/* Colours from the head unit's own UI, as the Cabinwright API's CarPage uses them
+   (menu repo, api/ui/.../CarPage.kt). Night is the default; day text and teal are
+   darkened here so they pass WCAG AA on a web page. */
+:root {
+  --bg: #121214;          /* CarPage night BG */
+  --card: #161618;        /* night TILE */
+  --edge: #313136;        /* night EDGE */
+  --tile: #1F1F24;        /* night ICON_TILE */
+  --tile-edge: #3D3D44;   /* night ICON_TILE_EDGE */
+  --text: #B6C1C8;        /* night TEXT */
+  --muted: #79838A;       /* night MUTED */
+  --head: #E8EDF0;
+  --accent: #17BEB0;      /* ACCENT, the head unit's highlight teal */
+  --on-accent: #121214;
+  --g1: #34E0D5;          /* ICON_START */
+  --g2: #847FDC;          /* ACCENT_END */
+  --warn: #F1B336;        /* WARN */
+  --bad: #EB5757;         /* BAD */
+  --code: #0E0E0F;        /* night DIVIDER */
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #F0F0F0;        /* CarPage day BG */
+    --card: #F7F7F7;
+    --edge: #CBCBCB;      /* day EDGE */
+    --tile: #F0F0F2;      /* day ICON_TILE */
+    --tile-edge: #DDDDE0; /* day ICON_TILE_EDGE */
+    --text: #4A5F65;      /* day TEXT #62797F, darkened */
+    --muted: #566B71;     /* day MUTED #8D9DA2, darkened */
+    --head: #1E2A30;
+    --accent: #0A6F68;    /* the teal, darkened */
+    --on-accent: #FFFFFF;
+    --g1: #0B8F86;
+    --g2: #5A54C4;
+    --warn: #8A5A00;
+    --bad: #B3261E;
+    --code: #E6E6E8;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 17px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+a { color: var(--accent); text-underline-offset: 2px; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+h1, h2, h3 { color: var(--head); line-height: 1.25; margin: 0 0 .5em; }
+h1 { font-size: clamp(1.7rem, 5vw, 2.4rem); font-weight: 650; }
+h2 { font-size: 1.45rem; font-weight: 650; margin-top: 0; }
+h3 { font-size: 1.08rem; font-weight: 600; }
+p { margin: 0 0 1em; }
+code, pre { font: .88em/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+code { background: var(--code); border: 1px solid var(--edge); border-radius: 5px; padding: .05em .35em; overflow-wrap: anywhere; }
+pre { background: var(--code); border: 1px solid var(--edge); border-radius: 12px; padding: 14px 16px; overflow-x: auto; }
+pre code { background: none; border: 0; padding: 0; }
+.wrap { max-width: 980px; margin: 0 auto; padding: 0 16px; }
+.skip { position: absolute; left: -9999px; }
+.skip:focus { left: 16px; top: 8px; background: var(--card); padding: 8px 12px; z-index: 2; }
+
+header.top { border-bottom: 1px solid var(--edge); }
+header.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding-top: 14px; padding-bottom: 14px; }
+header.top img { display: block; height: 36px; width: auto; }
+nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 18px; }
+nav a { color: var(--text); text-decoration: none; font-size: .95rem; }
+nav a:hover { color: var(--accent); }
+
+.hero { padding-top: 48px; padding-bottom: 32px; }
+.hero .lede { font-size: 1.15rem; max-width: 40em; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 0; padding: 0; list-style: none; }
+.chips li { border: 1px solid var(--edge); border-radius: 999px; padding: 4px 12px; font-size: .9rem; }
+.chips li.on { border-color: var(--accent); color: var(--accent); }
+.buttons { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.btn { display: inline-block; padding: 10px 18px; border-radius: 999px; border: 1px solid var(--edge); color: var(--head); text-decoration: none; font-weight: 600; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.note { color: var(--muted); font-size: .92rem; }
+
+section { padding: 36px 0; border-top: 1px solid var(--edge); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px; }
+.grid.two { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+.card { background: var(--card); border: 1px solid var(--edge); border-radius: 16px; padding: 18px; }
+.card h3 { margin-bottom: .3em; }
+.card p:last-child, .card ul:last-child { margin-bottom: 0; }
+.card ul { padding-left: 1.1em; margin: .4em 0 1em; }
+.row { display: flex; gap: 14px; align-items: flex-start; }
+.icon { flex: none; width: 52px; height: 52px; border-radius: 50%; background: var(--tile); border: 1px solid var(--tile-edge); display: grid; place-items: center; overflow: hidden; }
+.icon svg { width: 28px; height: 28px; }
+.icon img { width: 52px; height: 52px; }
+.icon .letter { font-weight: 700; color: var(--accent); font-size: 1.3rem; }
+.meta { color: var(--muted); font-size: .88rem; margin-bottom: .4em; }
+.tag { display: inline-block; font-size: .8rem; border: 1px solid var(--edge); border-radius: 999px; padding: 0 8px; margin: 2px 4px 0 0; }
+.tag.sys { border-color: var(--warn); color: var(--warn); }
+.warn { border-left: 4px solid var(--warn); }
+.danger { border-left: 4px solid var(--bad); }
+.danger strong { color: var(--bad); }
+
+ol.steps { counter-reset: s; list-style: none; padding: 0; margin: 0 0 1em; display: grid; gap: 12px; }
+ol.steps > li { counter-increment: s; position: relative; padding: 16px 18px 16px 64px; background: var(--card); border: 1px solid var(--edge); border-radius: 16px; }
+ol.steps > li::before { content: counter(s); position: absolute; left: 16px; top: 14px; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; color: var(--accent); border: 2px solid var(--accent); }
+ol.steps p { margin: .3em 0 0; }
+
+table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--edge); vertical-align: top; }
+th { color: var(--head); font-weight: 600; }
+.table { overflow-x: auto; }
+.plan { border: 1px dashed var(--edge); }
+.plan .label { display: inline-block; font-size: .8rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--accent); margin-bottom: .4em; }
+
+footer { border-top: 1px solid var(--edge); padding: 28px 0 40px; font-size: .92rem; }
+footer .affil { color: var(--head); font-weight: 600; }
+
+@media (max-width: 560px) {
+  body { font-size: 16px; }
+  .hero { padding-top: 32px; }
+  .grid, .grid.two { grid-template-columns: 1fr; }
+  ol.steps > li { padding-left: 58px; }
+  ol.steps > li::before { left: 12px; }
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="top">
+  <div class="wrap">
+    <a href="./" aria-label="Cabinwright home"><img src="logo.svg" alt="Cabinwright" width="175" height="36"></a>
+    <nav aria-label="Sections">
+      <ul>
+        <li><a href="#what">What you can do</a></li>
+        <li><a href="#start">Get started</a></li>
+        <li><a href="#safety">Safety</a></li>
+        <li><a href="#developers">Developers</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="wrap hero">
+    <h1>Apps and small fixes for your car's screen</h1>
+    <p class="lede">Cabinwright is an app store for Kia and Hyundai head units that run
+      <a href="https://github.com/xwtk/hmg_nemesis">NEMESIS</a>. You install it once, then add,
+      update and remove everything else from the car's own screen. It is free and open source.</p>
+    <ul class="chips" aria-label="At a glance">
+      <li class="on">Free and open source</li>
+      <li>Every change can be undone</li>
+      <li>Built and tested on a 2023 Kia EV6</li>
+    </ul>
+    <div class="buttons">
+      <a class="btn primary" href="#start">Get started</a>
+      <a class="btn" href="https://github.com/cabinwright">Source on GitHub</a>
+    </div>
+    <p class="note" style="margin-top:18px">Not affiliated with Kia, Hyundai or Mobis.</p>
+  </div>
+
+  <section id="what" aria-labelledby="what-h">
+    <div class="wrap">
+      <h2 id="what-h">What you can do</h2>
+      <p>Everything below comes from the store. Most of it is a switch you can turn back off.</p>
+      <div class="grid two">
+        <div class="card"><div class="row">
+          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="var(--accent)"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg></div>
+          <div>
+            <h3>Edit Menu</h3>
+            <p>Hide and reorder the icons in All Menus, the head unit's own included. Apps you add
+              from the store show up there too.</p>
+            <p class="note">Needs a one-time change to the head unit's launcher, done from a computer.</p>
+          </div>
+        </div></div>
+
+        <div class="card"><div class="row">
+          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="2.5" y="4" width="19" height="7" rx="3.5"/><circle cx="18" cy="7.5" r="1.8" fill="var(--accent)"/><rect x="2.5" y="13" width="19" height="7" rx="3.5"/><circle cx="6" cy="16.5" r="1.8"/></svg></div>
+          <div>
+            <h3>Tweaks</h3>
+            <p>Small fixes, each with an on/off switch:</p>
+            <ul>
+              <li>Automatic daylight saving time</li>
+              <li>Skip the start-up screen and go straight to the home screen</li>
+            </ul>
+            <p class="note">Tweak packs add more switches to the same app.</p>
+          </div>
+        </div></div>
+
+        <div class="card"><div class="row">
+          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><rect x="7" y="3" width="10" height="18" rx="2.5"/><path d="M2.5 9a8 8 0 0 1 0 6M21.5 9a8 8 0 0 0 0 6"/></svg></div>
+          <div>
+            <h3>Wireless Android Auto and CarPlay</h3>
+            <p>A tweak pack with four switches:</p>
+            <ul>
+              <li>Connect your phone without a cable</li>
+              <li>Your phone's next turn in the instrument cluster and head-up display</li>
+              <li>Reconnect Android Auto when it gets stuck after the car's hotspot was used</li>
+              <li>Keep wireless projection working with Engineering Mode's ADB TCP on</li>
+            </ul>
+          </div>
+        </div></div>
+
+        <div class="card"><div class="row">
+          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="19" height="16" rx="3"/><path d="M7 10l3 2.5L7 15M12.5 15H17"/></svg></div>
+          <div>
+            <h3>ADB over Wi-Fi</h3>
+            <p>A tweak pack that lets a computer on the car's Wi-Fi use ADB, Android's
+              debugging connection. It stays in step with Engineering Mode's own ADB switch.</p>
+            <p class="note"><strong style="color:var(--warn)">No password:</strong> see <a href="#safety">Safety</a>.</p>
+          </div>
+        </div></div>
+      </div>
+
+      <h3 style="margin-top:32px" id="apps-h">In the store now</h3>
+      <p class="note" id="apps-status">The list below is from when this page was written.</p>
+      <div class="grid" id="apps" aria-labelledby="apps-h" aria-live="polite">
+        <div class="card"><div class="row"><div class="icon" aria-hidden="true"><img src="https://cabinwright.github.io/apps/icons/cabinwright.store.png" alt="" width="52" height="52"></div><div><h3>Cabinwright</h3><p class="meta">Version 1.2</p><p>Get more apps for your car</p></div></div></div>
+        <div class="card"><div class="row"><div class="icon" aria-hidden="true"><img src="https://cabinwright.github.io/apps/icons/cabinwright.menu.png" alt="" width="52" height="52"></div><div><h3>Edit Menu</h3><p class="meta">Version 1.3</p><p>Hide and reorder your home screen icons</p></div></div></div>
+        <div class="card"><div class="row"><div class="icon" aria-hidden="true"><img src="https://cabinwright.github.io/apps/icons/cabinwright.tweaks.png" alt="" width="52" height="52"></div><div><h3>Tweaks</h3><p class="meta">Version 1.4</p><p>Small fixes, each with an on/off switch</p><span class="tag sys">Changes system files</span></div></div></div>
+        <div class="card"><div class="row"><div class="icon" aria-hidden="true"><span class="letter">W</span></div><div><h3>Wireless Android Auto and CarPlay</h3><p class="meta">Version 1.2 · needs Tweaks</p><p>Use Android Auto and CarPlay without a cable</p><span class="tag sys">Changes system files</span></div></div></div>
+        <div class="card"><div class="row"><div class="icon" aria-hidden="true"><span class="letter">A</span></div><div><h3>ADB over Wi-Fi</h3><p class="meta">Version 1.1 · needs Tweaks</p><p>Lets a computer on the car's Wi-Fi control the head unit</p><span class="tag sys">Changes system files</span></div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="start" aria-labelledby="start-h">
+    <div class="wrap">
+      <h2 id="start-h">Get started</h2>
+      <ol class="steps">
+        <li>
+          <h3>Install NEMESIS</h3>
+          <p>NEMESIS is a separate community project that lets the head unit install packages.
+            Follow <a href="https://github.com/xwtk/hmg_nemesis">its instructions</a>.</p>
+        </li>
+        <li>
+          <h3>Install the Cabinwright store</h3>
+          <p>Download <code>cabinwright.store-<span id="store-ver">&lt;version&gt;</span>.zip</code> from the
+            <a id="store-dl" href="https://github.com/cabinwright/store/releases/latest">store's release page</a>.
+            Install it with NEMESIS, from a USB stick, or over ADB with
+            <code>nemesis install --update &lt;zip&gt;</code>.</p>
+        </li>
+        <li>
+          <h3>Get the rest from the store</h3>
+          <p>Open Cabinwright on the head unit and install Edit Menu, Tweaks and the tweak packs
+            you want. The store installs what a package needs first, and shows in plain words
+            what each one changes before you agree.</p>
+        </li>
+      </ol>
+      <div class="card">
+        <h3>Using the older kia.* packages?</h3>
+        <p>This project used to be called kia-store, kia-menu and kia-tweaks. The new packages
+          install beside the old ones and take over their settings, without turning anything off.
+          <a href="https://github.com/cabinwright/store/blob/main/docs/migrating-from-kia.md">Moving from the kia.* packages</a>
+          has the steps.</p>
+      </div>
+      <p class="note" style="margin-top:16px">Tested on one car so far: a 2023 Kia EV6 (US), Gen5W head unit,
+        Android 4.4, firmware <code>CVEV.USA.0000.V015.012.260507</code>. The store and Edit Menu are
+        ordinary apps. Anything that changes system files is offered only for the exact firmware it
+        was tested on, so on other cars the store won't offer it.</p>
+    </div>
+  </section>
+
+  <section id="safety" aria-labelledby="safety-h">
+    <div class="wrap">
+      <h2 id="safety-h">Safety</h2>
+      <p>Changing your head unit is at your own risk. Here is what Cabinwright changes, and how
+        to put it back.</p>
+      <div class="grid">
+        <div class="card">
+          <h3>What it changes</h3>
+          <p>The store installs apps and its own background helper. Nothing changes the head unit's
+            system files until you turn on a tweak that says so, and the store tells you before
+            installing anything that does.</p>
+          <p>Every system change checks the file is exactly the factory one, and keeps a copy of
+            the original first.</p>
+        </div>
+        <div class="card">
+          <h3>How to undo it</h3>
+          <p>Turn a tweak's switch off and the original files go back, byte for byte. Remove an app
+            or a tweak pack in the store; removing a pack turns its tweaks off. Some changes
+            show only after the head unit restarts.</p>
+        </div>
+        <div class="card warn">
+          <h3>If you can't reach the Tweaks app</h3>
+          <p>There is a USB rescue that doesn't need the screen: a restore script on a NEMESIS USB
+            stick puts back the factory SystemUI (what Skip start-up screen changes), and another
+            puts back the factory launcher (what Edit Menu changes).</p>
+          <p class="note">Scripts: <code>systemui/restore-systemui.sh</code> in
+            <a href="https://github.com/cabinwright/tweaks">tweaks</a>,
+            <code>launcher/restore-launcher.sh</code> in <a href="https://github.com/cabinwright/menu">menu</a>.</p>
+        </div>
+        <div class="card danger">
+          <h3>ADB over Wi-Fi has no password</h3>
+          <p><strong>Anyone who joins the car's Wi-Fi can control the head unit.</strong>
+            The head unit's ADB can't ask for a key, so there is no way to limit it to your
+            computer. Turn it on only while you need it.</p>
+        </div>
+        <div class="card">
+          <h3>Only install apps you trust</h3>
+          <p>Today, any app installed through NEMESIS can get full control of the head unit. That
+            is how NEMESIS works, not something the store can stop yet. Apps in the store are
+            reviewed, and the list is signed so it can't be swapped on the way to your car.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="developers" aria-labelledby="dev-h">
+    <div class="wrap">
+      <h2 id="dev-h">For developers</h2>
+      <p>Everything is on GitHub under <a href="https://github.com/cabinwright">cabinwright</a>. Apps
+        are Kotlin or Java compiled against Android 4.4 (API 19), built without Gradle and shrunk
+        with R8. On-car scripts are shell for the head unit's mksh and toolbox.</p>
+
+      <div class="table">
+      <table>
+        <thead><tr><th scope="col">Repo</th><th scope="col">What's in it</th><th scope="col">License</th></tr></thead>
+        <tbody>
+          <tr><td><a href="https://github.com/cabinwright/store">store</a></td><td>The Cabinwright store app (<code>cabinwright.store</code>), its root helper, and the move from kia.store.</td><td>MIT</td></tr>
+          <tr><td><a href="https://github.com/cabinwright/menu">menu</a></td><td>Edit Menu (<code>cabinwright.menu</code>), the launcher hook, and the Cabinwright API and build tools.</td><td>MIT</td></tr>
+          <tr><td><a href="https://github.com/cabinwright/tweaks">tweaks</a></td><td>The Tweaks app (<code>cabinwright.tweaks</code>) and the tweak runner, <code>tweaksd</code>.</td><td>MIT</td></tr>
+          <tr><td><a href="https://github.com/cabinwright/tweaks-projection">tweaks-projection</a></td><td>Wireless Android Auto and CarPlay, cluster directions, reconnect (<code>tweaks.projection</code>). A port of HMG Leafia Plus's package.</td><td>AGPL-3.0</td></tr>
+          <tr><td><a href="https://github.com/cabinwright/tweaks-adb">tweaks-adb</a></td><td>ADB over Wi-Fi (<code>tweaks.adb</code>), kept in step with Engineering Mode.</td><td>MIT</td></tr>
+          <tr><td><a href="https://github.com/cabinwright/apps">apps</a></td><td>The signed app index: one <code>apps/&lt;id&gt;.json</code> per app, checked on every pull request.</td><td>MIT</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <div class="grid" style="margin-top:20px">
+        <div class="card">
+          <h3>The index</h3>
+          <p>The store reads <a href="https://cabinwright.github.io/apps/index.json"><code>apps/index.json</code></a>
+            and <code>index.json.sig</code>, an RSA-3072 SHA256withRSA signature over its exact bytes,
+            checked against pinned keys. A <code>sequence</code> that never goes down and an
+            <code>expires</code> 90 days out stop old copies being replayed. Each version pins its
+            package's size and SHA-256, and carries a review of what it installs.</p>
+          <p>To add an app, release a NEMESIS zip on GitHub and open a pull request with
+            <code>apps/&lt;id&gt;.json</code>: see
+            <a href="https://github.com/cabinwright/apps/blob/main/CONTRIBUTING.md">CONTRIBUTING</a>.</p>
+        </div>
+        <div class="card">
+          <h3>Tweak packs</h3>
+          <p>A tweak pack is any NEMESIS package with a <code>tweaks/&lt;id&gt;/</code> folder:
+            a <code>tweak.conf</code> plus shell scripts (<code>run.sh</code>, or
+            <code>enable.sh</code>, <code>disable.sh</code> and <code>status.sh</code>). Its
+            switches appear in the Tweaks app, and <code>tweaksd</code> runs them. Packs need no
+            install hooks. The format and lifecycle are in the tweaks repo's
+            <a href="https://github.com/cabinwright/tweaks/blob/main/DESIGN.md">DESIGN.md</a>.</p>
+        </div>
+        <div class="card">
+          <h3>The app API</h3>
+          <p>Add one intent filter and your app appears in All Menus:</p>
+<pre><code>&lt;category android:name=
+  "dev.cabinwright.category.ALL_MENUS" /&gt;</code></pre>
+          <p>The optional UI library gives you <code>CarPage</code> (the head unit's look, day and
+            night), <code>SplitScreen</code> and <code>CarAudio</code> (play through the car's
+            speakers). <code>api/tools/build-app.sh</code> builds an app;
+            <code>lint.sh</code> checks it. See the
+            <a href="https://github.com/cabinwright/menu">menu repo</a>.</p>
+        </div>
+      </div>
+
+      <div class="card plan" style="margin-top:20px">
+        <span class="label">Plan, not built yet</span>
+        <h3>The store as the platform (store 2.0)</h3>
+        <p>Install one package, the store, and get everything else from it. Apps would run without
+          root and ask the store's broker for what they need, with the driver's approval:
+          permissions are listed at install, enforced at use, and can be switched off per app.
+          Tweaks would move under the same rules: the tweak runner moves into the store, each tweak
+          declares the exact files, settings and services it touches, and the runner keeps every
+          backup. The design is in
+          <a href="https://github.com/cabinwright/store/blob/main/docs/platform.md">docs/platform.md</a>.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p class="affil">Not affiliated with Kia, Hyundai or Mobis.</p>
+    <p>Kia and Hyundai are trademarks of their owners, used here only to say which head units
+      this works with. NEMESIS is a separate community project. Modifying your head unit is at your own risk.</p>
+    <p>Cabinwright by hazptr. <a href="https://github.com/cabinwright/cabinwright.github.io">Source for this page</a>, MIT licensed.</p>
+  </div>
+</footer>
+
+<script>
+// Replaces the static app list with the live, signed index. The page works without it.
+(function () {
+  var list = document.getElementById("apps");
+  var status = document.getElementById("apps-status");
+  if (!window.fetch || !list) return;
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  var ICONS = "https://cabinwright.github.io/apps/icons/";
+
+  fetch("https://cabinwright.github.io/apps/index.json", { cache: "no-cache" })
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (idx) {
+      var names = {};
+      idx.apps.forEach(function (a) { names[a.id] = a.name; });
+      var apps = idx.apps.filter(function (a) { return !a.withdrawn && !a.deprecated && a.versions && a.versions.length; });
+      if (!apps.length) throw new Error("empty");
+      var frag = document.createDocumentFragment();
+      apps.forEach(function (a) {
+        var v = a.versions[0], review = v.review || {};
+        var card = el("div", "card"), row = el("div", "row"), icon = el("div", "icon"), body = el("div");
+        icon.setAttribute("aria-hidden", "true");
+        if (a.icon && typeof a.icon.url === "string" && a.icon.url.indexOf(ICONS) === 0) {
+          var img = el("img"); img.src = a.icon.url; img.alt = ""; img.width = 52; img.height = 52;
+          icon.appendChild(img);
+        } else {
+          icon.appendChild(el("span", "letter", (a.name || a.id).charAt(0)));
+        }
+        body.appendChild(el("h3", null, a.name));
+        var meta = "Version " + v.version;
+        var needs = (v.requires || []).map(function (r) { return names[r.split(/[<>=]/)[0]] || r; });
+        if (needs.length) meta += " · needs " + needs.join(", ");
+        body.appendChild(el("p", "meta", meta));
+        body.appendChild(el("p", null, a.summary));
+        if (review.system_writes) body.appendChild(el("span", "tag sys", "Changes system files"));
+        row.appendChild(icon); row.appendChild(body); card.appendChild(row);
+        frag.appendChild(card);
+        if (a.id === "cabinwright.store" && /^[0-9.]+$/.test(v.version)) {
+          document.getElementById("store-ver").textContent = v.version;
+          if (/^https:\/\/github\.com\/cabinwright\/store\/releases\/download\//.test(v.url))
+            document.getElementById("store-dl").href = v.url.replace(/\/download\/([^/]+)\/.*$/, "/tag/$1");
+        }
+      });
+      list.textContent = "";
+      list.appendChild(frag);
+      var d = new Date(idx.generated);
+      status.textContent = "Live from the store's index" + (isNaN(d) ? "." : ", updated " + d.toISOString().slice(0, 10) + ".");
+    })
+    .catch(function () {
+      status.textContent = "Couldn't load the live list, so this is the list from when this page was written.";
+    });
+})();
+</script>
+</body>
+</html>
